@@ -148,7 +148,7 @@ class _ExampleCubeState extends State<ExampleCube> {
   animate() {
     render();
 
-    Future.delayed(Duration(milliseconds: 20), () {
+    Future.delayed(Duration(milliseconds: 40), () {
       animate();
     });
   }
@@ -176,7 +176,7 @@ class _ExampleCubeState extends State<ExampleCube> {
   }
 
   clickRender() {
-    print("clicked render button");
+    print(" click render ... ");
     //render();
     animate();
   }
@@ -193,6 +193,18 @@ class _ExampleCubeState extends State<ExampleCube> {
     ]);
   }
 
+  Float32List getZRotationMatrix(double angleZ) {
+    final cosZ = cos(angleZ);
+    final sinZ = sin(angleZ);
+
+    return Float32List.fromList([
+      cosZ, -sinZ, 0.0, 0.0,
+      sinZ, cosZ, 0.0, 0.0,
+      0.0, 0.0, 1.0, 0.0,
+      0.0, 0.0, 0.0, 1.0,
+    ]);
+  }
+
   Float32List getYRotationMatrix(double angleY) {
     final cosY = cos(angleY);
     final sinY = sin(angleY);
@@ -204,19 +216,6 @@ class _ExampleCubeState extends State<ExampleCube> {
       0.0, 0.0, 0.0, 1.0,
     ]);
   }
-
-    Float32List getZRotationMatrix(double angleZ) {
-    final cosZ = cos(angleZ);
-    final sinZ = sin(angleZ);
-
-    return Float32List.fromList([
-      cosZ, -sinZ, 0.0, 0.0,
-      sinZ, cosZ, 0.0, 0.0,
-      0.0, 0.0, 1.0, 0.0,
-      0.0, 0.0, 0.0, 1.0,
-    ]);
-  }
-  
   Float32List multiplyMatrices(Float32List a, Float32List b) {
   Float32List result = Float32List(16);
 
@@ -235,25 +234,23 @@ class _ExampleCubeState extends State<ExampleCube> {
 
   render() {
     final _gl = flutterGlPlugin.gl;
-    //super important it couldnt work without it
-    _gl.enable(_gl.DEPTH_TEST);
-    _gl.depthFunc(_gl.LEQUAL);
 
-    // Calculate rotation angles for X, Y, and Z axes
-    double angleX = 0.5;
-    double angleY = (DateTime.now().millisecondsSinceEpoch % 9000) / 9000.0 * 2 * pi;
-    double angleZ = 0.0;
+  // Calculate rotation angles for X, Y, and Z axes
+  double angleX = (DateTime.now().millisecondsSinceEpoch % 7000) / 7000.0 * 2 * pi;
+  double angleY = 0.2;
+  double angleZ = (DateTime.now().millisecondsSinceEpoch % 9000) / 9000.0 * 2 * pi;
 
-    //getting rotation matrixes
-    Float32List rotationMatrixX = getXRotationMatrix(angleX);
-    Float32List rotationMatrixY = getYRotationMatrix(angleY);
-    Float32List rotationMatrixZ = getZRotationMatrix(angleZ);
+  // Create rotation matrices for each axis
+  Float32List rotationMatrixX = getXRotationMatrix(angleX);
+  Float32List rotationMatrixY = getYRotationMatrix(angleY);
+  Float32List rotationMatrixZ = getZRotationMatrix(angleZ);
 
-    //combine matrixes
-    Float32List rotationMatrixXY = multiplyMatrices(rotationMatrixX, rotationMatrixY);
-    Float32List combinedRotationMatrix = multiplyMatrices(rotationMatrixXY, rotationMatrixZ);
+  // Combine the rotation matrices
+  Float32List rotationMatrixXY = multiplyMatrices(rotationMatrixX, rotationMatrixY);
+  Float32List combinedRotationMatrix = multiplyMatrices(rotationMatrixXY, rotationMatrixZ);
 
 
+    // Pass the rotation matrix to the shader
     var u_ModelMatrix = _gl.getUniformLocation(glProgram, 'model');
 
     _gl.uniformMatrix4fv(u_ModelMatrix, false, combinedRotationMatrix);
@@ -326,93 +323,131 @@ class _ExampleCubeState extends State<ExampleCube> {
     }
   }
 
-  initVertexBuffers(gl) {
-    var vertices = Float32List.fromList([
-        // Front Face(red)
-        -0.5, -0.5, -0.5,  1.0, 0.0, 0.0, // Bottom left
-        0.5, -0.5, -0.5,   1.0, 0.0, 0.0, // Bottom right
-        0.5,  0.5, -0.5,   1.0, 0.0, 0.0,// Top right
-        -0.5,  0.5, -0.5,  1.0, 0.0, 0.0,// Top left
-        // Back Face(green)
-        -0.5, -0.5,  0.5,   0.0, 1.0, 0.0,// Bottom left
-        0.5, -0.5,  0.5,    0.0, 1.0, 0.0,// Bottom right
-        0.5,  0.5,  0.5,    0.0, 1.0, 0.0,// Top right
-        -0.5,  0.5,  0.5,   0.0, 1.0, 0.0,// Top left
+initVertexBuffers(gl) {
+  var dim = 3;
+  var vertices = Float32List.fromList([
+      // Front Face
+      -0.5, -0.5, -0.5,   // Bottom left
+      0.5, -0.5, -0.5,    // Bottom right
+      0.5,  0.5, -0.5,    // Top right
+      -0.5,  0.5, -0.5,   // Top left
+      // Back Face
+      -0.5, -0.5,  0.5,   // Bottom left
+      0.5, -0.5,  0.5,    // Bottom right
+      0.5,  0.5,  0.5,    // Top right
+      -0.5,  0.5,  0.5,   // Top left
 
-        // Top face(blue)
-        -0.5, 0.5, -0.5,   0.0, 0.0, 1.0,// Top left
-        0.5, 0.5, -0.5,    0.0, 0.0, 1.0,// Top right
-        0.5, 0.5, 0.5,     0.0, 0.0, 1.0,// Bottom right
-        -0.5, 0.5, 0.5,    0.0, 0.0, 1.0,// Bottom left
+      // Top face
+      -0.5, 0.5, -0.5,  // Top left
+      0.5, 0.5, -0.5,   // Top right
+      0.5, 0.5, 0.5,    // Bottom right
+      -0.5, 0.5, 0.5,   // Bottom left
 
-        // Bottom face(yellow)
-        -0.5, -0.5, -0.5,  1.0, 1.0, 0.0,// Top left
-        0.5, -0.5, -0.5,   1.0, 1.0, 0.0,// Top right
-        0.5, -0.5, 0.5,    1.0, 1.0, 0.0,// Bottom right
-        -0.5, -0.5, 0.5,   1.0, 1.0, 0.0,// Bottom left
+      // Bottom face
+      -0.5, -0.5, -0.5, // Top left
+      0.5, -0.5, -0.5,  // Top right
+      0.5, -0.5, 0.5,   // Bottom right
+      -0.5, -0.5, 0.5,  // Bottom left
 
-        // Right face(pink)
-        0.5, -0.5, -0.5,  1.0, 0.0, 1.0,// Bottom left
-        0.5, 0.5, -0.5,   1.0, 0.0, 1.0,// Top left
-        0.5, 0.5, 0.5,    1.0, 0.0, 1.0,// Top right
-        0.5, -0.5, 0.5,   1.0, 0.0, 1.0,// Bottom right
+      // Right face
+      0.5, -0.5, -0.5,  // Bottom left
+      0.5, 0.5, -0.5,   // Top left
+      0.5, 0.5, 0.5,    // Top right
+      0.5, -0.5, 0.5,   // Bottom right
 
-        // Left face(cyan)
-        -0.5, -0.5, -0.5, 0.0, 1.0, 1.0, // Bottom left
-        -0.5, 0.5, -0.5,  0.0, 1.0, 1.0,// Top left
-        -0.5, 0.5, 0.5,   0.0, 1.0, 1.0,// Top right
-        -0.5, -0.5, 0.5,   0.0, 1.0, 1.0,// Bottom right
-    ]);
-    var indices = Uint16Array.fromList([
-      //front face
-      0, 1, 2, //bottom right
-      2, 3, 0, //top left
+      // Left face
+      -0.5, -0.5, -0.5, // Bottom left
+      -0.5, 0.5, -0.5,  // Top left
+      -0.5, 0.5, 0.5,   // Top right
+      -0.5, -0.5, 0.5   // Bottom right
+  ]);
+  var indices = Uint16Array.fromList([
+    //front face
+    0, 1, 2, //bottom right
+    2, 3, 0, //top left
 
-      //back face
-      4, 5, 6,
-      6, 7, 4,
+    // Back face
+    4, 5, 6,
+    6, 7, 4,
 
-      //top face
-      8, 9, 10,
-      10, 11, 8,
+    // Top face
+    8, 9, 10,
+    10, 11, 8,
 
-      //bottom face
-      12, 13, 14,
-      14, 15, 12,
+    // Bottom face
+    12, 13, 14,
+    14, 15, 12,
 
-      //right face
-      16, 17, 18,
-      18, 19, 16,
+    // Right face
+    16, 17, 18,
+    18, 19, 16,
 
-      //left face
-      20, 21, 22,
-      22, 23, 20,
-    ]);
+    // Left face
+    20, 21, 22,
+    22, 23, 20
+  ]);
+ var colors = Float32List.fromList([
+      // Colors for each vertex
+      1.0, 0.0, 0.0, // Front face (Red)
+      1.0, 0.0, 0.0,
+      1.0, 0.0, 0.0,
+      1.0, 0.0, 0.0,
 
-    _vao = gl.createVertexArray();
+      0.0, 1.0, 0.0, // Back face (Green)
+      0.0, 1.0, 0.0,
+      0.0, 1.0, 0.0,
+      0.0, 1.0, 0.0,
+
+      0.0, 0.0, 1.0, // Top face (Blue)
+      0.0, 0.0, 1.0,
+      0.0, 0.0, 1.0,
+      0.0, 0.0, 1.0,
+
+      1.0, 1.0, 0.0, // Bottom face (Yellow)
+      1.0, 1.0, 0.0,
+      1.0, 1.0, 0.0,
+      1.0, 1.0, 0.0,
+
+      1.0, 0.0, 1.0, // Right face (Magenta)
+      1.0, 0.0, 1.0,
+      1.0, 0.0, 1.0,
+      1.0, 0.0, 1.0,
+
+      0.0, 1.0, 1.0, // Left face (Cyan)
+      0.0, 1.0, 1.0,
+      0.0, 1.0, 1.0,
+      0.0, 1.0, 1.0,
+  ]);
+  _vao = gl.createVertexArray();
+  gl.bindVertexArray(_vao);
+
+// Create a buffer object
     var vertexBuffer = gl.createBuffer();
-    var indexBuffer = gl.createBuffer();
-
-    gl.bindVertexArray(_vao);
-
-    //create a buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, vertices.lengthInBytes, vertices, gl.STATIC_DRAW);
 
+    var indexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices.lengthInBytes, indices, gl.STATIC_DRAW);
 
-    //assign the vertices in buffer object to a_Position variable
+  // Color buffer
+    var colorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, colors.lengthInBytes, colors, gl.STATIC_DRAW);
+
+    // Assign the vertices in buffer object to a_Position variable
     var a_Position = gl.getAttribLocation(glProgram, 'a_Position');
-    gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 6 * Float32List.bytesPerElement, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+
+    gl.vertexAttribPointer(a_Position, dim, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(a_Position);
 
-
-    //assign the colors in buffer object to a_Color variable
+    
+  // Assign the colors in buffer object to a_Color variable
     var a_Color = gl.getAttribLocation(glProgram, 'a_Color');
-    gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, 6 * Float32List.bytesPerElement, 3 * Float32List.bytesPerElement);
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(a_Color);
-
     // Return number of vertices
     return vertices.length;
   }
