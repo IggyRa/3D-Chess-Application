@@ -4,7 +4,6 @@ import 'package:duration_picker/duration_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:chatt_app/screens/game.dart';
-import 'package:flutter/widgets.dart';
 
 class NewLobby extends StatefulWidget {
   const NewLobby({
@@ -74,6 +73,7 @@ class _NewLobbyState extends State<NewLobby> {
         .get();
 
     final lobbyDoc = await FirebaseFirestore.instance.collection('lobbys').add({
+      'gameState': {},
       'name': _nameController.text,
       'time': _formatDuration(_selectedDuration.toString()),
       'player1_color': _formatCategory(_selectedCategory.toString()),

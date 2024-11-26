@@ -21,13 +21,12 @@ class _GameState extends State<Game> {
   int player = Squares.white;
   bool flipBoard = false;
   Map<String, dynamic>? lobbyData;
-  late Stream<DocumentSnapshot> _lobbyStream;
+  late StreamSubscription<DocumentSnapshot> _lobbyStream;
   final user = FirebaseAuth.instance.currentUser!;
   late BoardState currentBoard;
-  //late StreamSubscription<DocumentSnapshot> _lobbySubscription;
   bool isListenerCancelled = false;
 
- @override
+  @override
   void initState() {
     _resetGame(false);
     super.initState();
@@ -38,47 +37,69 @@ class _GameState extends State<Game> {
     //
     final lobbyRef =
         FirebaseFirestore.instance.collection('lobbys').doc(widget.gameId);
-    _lobbyStream = lobbyRef.snapshots();
-    _lobbyStream.listen((snapshot) {
+    _lobbyStream = lobbyRef.snapshots().listen((snapshot) {
       if (snapshot.exists) {
         setState(() {
-          lobbyData = snapshot.data() as Map<String, dynamic>?;
+          lobbyData = snapshot.data();
           //for player 1
           if (lobbyData!['player1'] == user.uid) {
             if (lobbyData!['player1_color'] == 'white') {
+                            print('player 1 got white color');
               player = Squares.white;
-              print('player 1 got white color');
+
+              _resetGame(false);
             } else {
               player = Squares.black;
               print('player 1 got black color');
+              _resetGame(false);
             }
           }
-          
           //for player 2
           if (lobbyData!['player2'] == user.uid) {
             if (lobbyData!['player1_color'] == 'white') {
               player = Squares.black;
               print('player 2 got black color');
+              _resetGame(false);
             } else {
               player = Squares.white;
               print('player 2 got white color');
+              _resetGame(false);
             }
           }
-          _resetGame(false);
-});
+          if (lobbyData!['username2'] != "Waiting for player") {
+            print("subscription got cancelled");
+            _lobbyStream.cancel();
+            _initializeGameUpdates();
+          }
+          ;
+        });
+      }
+    });
+  }
+
+  Future<void> _initializeGameUpdates() async {
+    print("we now listening to game updates");
+    final gameRef =
+        FirebaseFirestore.instance.collection('lobbys').doc(widget.gameId);
+    gameRef.snapshots().listen((snapshot) {
+      if (snapshot.exists) {
+        setState(() {
+          lobbyData = snapshot.data();
+          _getGameFromFirestore();
+        });
       }
     });
   }
 
   @override
   void dispose() {
-    //_lobbySubscription.cancel();
     super.dispose();
   }
 
   void _resetGame([bool ss = true]) {
     game = bishop.Game(variant: bishop.Variant.standard());
     state = game.squaresState(player);
+    print("Board got reseted");
     if (ss) setState(() {});
   }
 
@@ -87,11 +108,11 @@ class _GameState extends State<Game> {
 
     if (result) {
       setState(() {
-        game.makeRandomMove();
         state = game.squaresState(player);
+        print(state);
       });
       currentBoard = state.board;
-      //_updateGameStateInFirestore();
+      _updateGameStateInFirestore();
     }
   }
 
@@ -101,58 +122,36 @@ class _GameState extends State<Game> {
 
     Map<String, dynamic> boardData = {
       'board': currentBoard.board,
-      'turn': currentBoard.turn == 0 ? 1 : 0,
+      'turn': currentBoard.turn,
       'orientation': currentBoard.orientation,
       'lastFrom': currentBoard.lastFrom,
       'lastTo': currentBoard.lastTo,
       'checkSquare': currentBoard.checkSquare,
     };
-    print(boardData);
-
+    print(currentBoard.turn);
     await lobbyRef.update({
       'gameState': boardData,
     });
-
   }
 
   Future<void> _getGameFromFirestore() async {
-    final lobbyRef =
-        FirebaseFirestore.instance.collection('lobbys').doc(widget.gameId);
-    _lobbyStream = lobbyRef.snapshots();
-    _lobbyStream.listen((snapshot) {
-      if (snapshot.exists) {
-        setState(() {
-          lobbyData = snapshot.data() as Map<String, dynamic>?;
-
-          Map<String, dynamic> boardData = lobbyData!['gameState'];
-          BoardState newBoard = BoardState(
-            board: List<String>.from(boardData['board']),
-            turn: boardData['turn'],
-            orientation: boardData['orientation'],
-            lastFrom: boardData['lastFrom'],
-            lastTo: boardData['lastTo'],
-            checkSquare: boardData['checkSquare'],
-          );
-
-          print(newBoard);
-
-          if (newBoard.turn != player) {
-            print('Opponent moved, updating board');
-
-            // void _acceptDrag(PartialMove move, int to) {
-            //   Map<int, String> updates = {
-            //     if (size.isOnBoard(move.from)) move.from: '',
-            //     if (size.isOnBoard(to)) to: move.piece,
-            //   };
-            //   final newState = state.updateSquares(updates);
-            //   setState(() => state = newState);
-            // }
-
-            state = game.squaresState(player);
-          }
-        });
-      }
-    });
+    Map<String, dynamic> boardData = lobbyData!['gameState'];
+    if (boardData['turn'] == player) {
+      BoardState newBoard = BoardState(
+        board: List<String>.from(boardData['board']),
+        turn: boardData['turn'] == 0 ? 0 : 1,
+        orientation: boardData['orientation'] == 0 ? 1 : 0,
+        lastFrom: boardData['lastFrom'],
+        lastTo: boardData['lastTo'],
+        checkSquare: boardData['checkSquare'],
+      );
+      setState(() {
+        print(newBoard.turn);
+        print('Opponent moved, updating board');
+        state = state.copyWith(board: newBoard, state: PlayState.ourTurn);
+        print(state);
+      });
+    }
   }
 
   Future<void> _exitGame() async {
@@ -160,13 +159,13 @@ class _GameState extends State<Game> {
         FirebaseFirestore.instance.collection('lobbys').doc(widget.gameId);
     //if player 2 leaves, lobby stays open
     if (lobbyData!['player2'] == user.uid) {
+
       await lobbyRef.update({
         'status': "waiting",
         'player2': "unknown",
         'username2': "Waiting for player",
-        'gameState': "???",
       });
-    } //if creator leaves, lobby gets deleted
+    }
     else {
       await lobbyRef.delete();
     }
@@ -195,7 +194,7 @@ class _GameState extends State<Game> {
         title: Text(lobbyData!['name']),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             _exitGame();
           },
@@ -224,6 +223,7 @@ class _GameState extends State<Game> {
                 moves: state.moves,
                 onMove: _onMove,
                 onPremove: _onMove,
+                draggable: false,
                 markerTheme: MarkerTheme(
                   empty: MarkerTheme.dot,
                   piece: MarkerTheme.corners(),
@@ -240,7 +240,7 @@ class _GameState extends State<Game> {
                 trailing: Text(lobbyData!['time']),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(
