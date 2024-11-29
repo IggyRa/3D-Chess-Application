@@ -1,3 +1,4 @@
+import 'package:chatt_app/screens/generation.dart';
 import 'package:chatt_app/screens/lobby_list.dart';
 import 'package:chatt_app/screens/new_lobby.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -62,7 +63,8 @@ class ChatScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const LobbyList()),
+                          MaterialPageRoute(
+                              builder: (context) => const LobbyList()),
                         );
                       },
                       label: const Text('Join the game'),
@@ -72,16 +74,23 @@ class ChatScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const NewLobby()),
+                          MaterialPageRoute(
+                              builder: (context) => const NewLobby()),
                         );
                       },
                       label: const Text('Start a game'),
                       icon: const Icon(Icons.add),
                     ),
                     ElevatedButton.icon(
-                      onPressed: () {},
-                      label: const Text('Options'),
-                      icon: const Icon(Icons.settings),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const GenerateScreen()),
+                        );
+                      },
+                      label: const Text('Chess generation'),
+                      icon: const Icon(Icons.threed_rotation_outlined),
                     ),
                     ElevatedButton.icon(
                       onPressed: () {

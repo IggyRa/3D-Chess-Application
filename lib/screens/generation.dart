@@ -32,14 +32,27 @@ class _GenerateScreenState extends State<GenerateScreen> {
   bool verbose = true;
   bool disposed = false;
 
-  late three.Object3D object;
+  late three.Object3D object,
+      wking,
+      wrook,
+      wpawn,
+      wknight,
+      wbishop,
+      wqueen,
+      bking,
+      brook,
+      bpawn,
+      bknight,
+      bbishop,
+      bqueen;
 
   late three.Texture texture;
 
   late three.WebGLMultisampleRenderTarget renderTarget;
 
   late three_jsm.OrbitControls controls;
-  final GlobalKey<three_jsm.DomLikeListenableState> _globalKey = GlobalKey<three_jsm.DomLikeListenableState>();
+  final GlobalKey<three_jsm.DomLikeListenableState> _globalKey =
+      GlobalKey<three_jsm.DomLikeListenableState>();
   dynamic sourceTexture;
 
   @override
@@ -123,7 +136,8 @@ class _GenerateScreenState extends State<GenerateScreen> {
                       child: Builder(builder: (BuildContext context) {
                         if (kIsWeb) {
                           return three3dRender.isInitialized
-                              ? HtmlElementView(viewType: three3dRender.textureId!.toString())
+                              ? HtmlElementView(
+                                  viewType: three3dRender.textureId!.toString())
                               : Container();
                         } else {
                           return three3dRender.isInitialized
@@ -177,7 +191,8 @@ class _GenerateScreenState extends State<GenerateScreen> {
 
     if (!kIsWeb) {
       var pars = three.WebGLRenderTargetOptions({"format": three.RGBAFormat});
-      renderTarget = three.WebGLMultisampleRenderTarget((width * dpr).toInt(), (height * dpr).toInt(), pars);
+      renderTarget = three.WebGLMultisampleRenderTarget(
+          (width * dpr).toInt(), (height * dpr).toInt(), pars);
       renderTarget.samples = 4;
       renderer!.setRenderTarget(renderTarget);
       sourceTexture = renderer!.getRenderTargetGLTexture(renderTarget);
@@ -191,7 +206,7 @@ class _GenerateScreenState extends State<GenerateScreen> {
 
   initPage() async {
     camera = three.PerspectiveCamera(45, width / height, 1, 2000);
-  camera.position.set(0, 100, 150); // Adjust camera position
+    camera.position.set(0, 100, 150); // Adjust camera position
     // scene
 
     scene = three.Scene();
@@ -201,7 +216,8 @@ class _GenerateScreenState extends State<GenerateScreen> {
 
     //controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
 
-    controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+    controls.enableDamping =
+        true; // an animation loop is required when either damping or auto-rotation are enabled
     controls.dampingFactor = 0.05;
 
     controls.screenSpacePanning = false;
@@ -217,23 +233,126 @@ class _GenerateScreenState extends State<GenerateScreen> {
     var pointLight = three.PointLight(0xffffff, 0.8);
     camera.add(pointLight);
     scene.add(camera);
-
+    scene.background = three.Color(0xd3d3d3);
     // texture
     var manager = three.LoadingManager();
 
     var mtlLoader = three_jsm.MTLLoader(manager);
-   
+
+    var loader = three_jsm.OBJLoader(null);
+
     mtlLoader.setPath('assets/models/obj_models/chess/');
     var materials = await mtlLoader.loadAsync('chess.mtl');
     await materials.preload();
 
-    var loader = three_jsm.OBJLoader(null);
     loader.setMaterials(materials);
     object = await loader.loadAsync('assets/models/obj_models/chess/chess.obj');
-
-    object.scale.set(1, 1, 1);
+    object.scale.set(0.5, 0.5, 0.5);
+    object.position.set(0, -2);
     object.rotation.x = -three.Math.pi / 2;
     scene.add(object);
+
+    mtlLoader.setPath('assets/models/obj_models/set/');
+    var whiteMaterial = await mtlLoader.loadAsync('white_material.mtl');
+    await whiteMaterial.preload();
+
+    loader.setMaterials(whiteMaterial);
+    wking =
+        await loader.loadAsync('assets/models/obj_models/set/white_king.obj');
+    wqueen =
+        await loader.loadAsync('assets/models/obj_models/set/white_queen.obj');
+    wrook =
+        await loader.loadAsync('assets/models/obj_models/set/white_rook.obj');
+    wknight =
+        await loader.loadAsync('assets/models/obj_models/set/white_knight.obj');
+    wbishop =
+        //await loader.loadAsync('assets/models/obj_models/set/white_bishop.obj');
+    wpawn =
+        await loader.loadAsync('assets/models/obj_models/set/white_pawn.obj');
+
+    var blackMaterial = await mtlLoader.loadAsync('black_material.mtl');
+    await blackMaterial.preload();
+    loader.setMaterials(blackMaterial);
+    bking =
+        await loader.loadAsync('assets/models/obj_models/set/black_king.obj');
+    bqueen =
+        await loader.loadAsync('assets/models/obj_models/set/black_queen.obj');
+    brook =
+        await loader.loadAsync('assets/models/obj_models/set/black_rook.obj');
+    bknight =
+        await loader.loadAsync('assets/models/obj_models/set/black_knight.obj');
+    // bbishop =
+    //     await loader.loadAsync('assets/models/obj_models/set/black_bishop.obj');
+    bpawn =
+        await loader.loadAsync('assets/models/obj_models/set/black_pawn.obj');
+
+//set white positions
+    wrook.position.set(-8, 0, 8);
+    three.Object3D wrook2 = wrook.clone();
+    wrook2.position.set(8, 0, 8);
+
+    // wbishop.position.set(-5.75, 0, 8);
+    // three.Object3D wbishop2 = wbishop.clone();
+    // wbishop2.position.set(5.75, 0, 8);
+
+    wknight.position.set(-3.5, 0, 8);
+    three.Object3D wknight2 = wknight.clone();
+    wknight2.position.set(3.5, 0, 8);
+    wknight.rotation.y = three.Math.pi;
+    wknight2.rotation.y = three.Math.pi;
+
+    wking.position.set(1.25, 1, 8);
+    wqueen.position.set(-1.25, 1, 8);
+//set black positions
+
+    brook.position.set(8, 0, -8);
+    three.Object3D brook2 = brook.clone();
+    brook2.position.set(-8, 0, -8);
+
+    // bbishop.position.set(-5.75, 0, 8);
+    // three.Object3D bbishop2 = bbishop.clone();
+    // bbishop2.position.set(5.75, 0, 8);
+
+    bknight.position.set(-3.5, 0, -8);
+    three.Object3D bknight2 = bknight.clone();
+    bknight2.position.set(3.5, 0, -8);
+        bknight.rotation.y = three.Math.pi;
+    bknight2.rotation.y = three.Math.pi;
+
+    bking.position.set(-1.25, 1, -8);
+    bqueen.position.set(-1.25, 1, -8);
+    //adding white pieces
+    scene.add(wrook);
+    scene.add(wrook2);
+    scene.add(wknight);
+    scene.add(wknight2);
+    scene.add(wking);
+    scene.add(wqueen);
+
+    //adding white pieces
+    scene.add(brook);
+    scene.add(brook2);
+    scene.add(bknight);
+    scene.add(bknight2);
+    scene.add(bking);
+    scene.add(bqueen);
+    for (double i = 0; i < 8; i++) {
+      three.Object3D newwpawn = wpawn.clone();
+      newwpawn.name = "wpawn$i";
+      //initial offset is 8, each separated by 2.25
+      newwpawn.position.set(-2.25 * i + 8, 0, 5.5);
+      scene.add(newwpawn);
+    }
+    //adding black pieces
+    scene.add(brook);
+
+    for (double i = 0; i < 8; i++) {
+      three.Object3D newbpawn = bpawn.clone();
+      newbpawn.name = "bpawn$i";
+      //initial offset is 8, each separated by 2.25
+      newbpawn.position.set(-2.25 * i + 8, 0, -5.5);
+      scene.add(newbpawn);
+    }
 
     animate();
   }

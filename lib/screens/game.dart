@@ -44,7 +44,7 @@ class _GameState extends State<Game> {
           //for player 1
           if (lobbyData!['player1'] == user.uid) {
             if (lobbyData!['player1_color'] == 'white') {
-                            print('player 1 got white color');
+              print('player 1 got white color');
               player = Squares.white;
 
               _resetGame(false);
@@ -104,8 +104,13 @@ class _GameState extends State<Game> {
   }
 
   void _onMove(Move move) async {
+    print("onMove tiggered");
     bool result = game.makeSquaresMove(move);
-
+    print(result);
+    print("move details");
+    print(move.from);
+    print(move.to);
+    print(move.piece);
     if (result) {
       setState(() {
         state = game.squaresState(player);
@@ -123,12 +128,12 @@ class _GameState extends State<Game> {
     Map<String, dynamic> boardData = {
       'board': currentBoard.board,
       'turn': currentBoard.turn,
-      'orientation': currentBoard.orientation,
-      'lastFrom': currentBoard.lastFrom,
-      'lastTo': currentBoard.lastTo,
-      'checkSquare': currentBoard.checkSquare,
+      // 'orientation': currentBoard.orientation,
+      // 'lastFrom': currentBoard.lastFrom,
+      // 'lastTo': currentBoard.lastTo,
+      // 'checkSquare': currentBoard.checkSquare,
     };
-    print(currentBoard.turn);
+    print('Updating Firestore with turn: ${currentBoard.turn}');
     await lobbyRef.update({
       'gameState': boardData,
     });
@@ -139,17 +144,22 @@ class _GameState extends State<Game> {
     if (boardData['turn'] == player) {
       BoardState newBoard = BoardState(
         board: List<String>.from(boardData['board']),
-        turn: boardData['turn'] == 0 ? 0 : 1,
-        orientation: boardData['orientation'] == 0 ? 1 : 0,
-        lastFrom: boardData['lastFrom'],
-        lastTo: boardData['lastTo'],
-        checkSquare: boardData['checkSquare'],
+        turn: boardData['turn'],
+        //orientation: boardData['orientation'],
+        //lastFrom: boardData['lastFrom'],
+        //lastTo: boardData['lastTo'],
+        //checkSquare: boardData['checkSquare'],
       );
+      //moving = bishop.GameMove(from: );
       setState(() {
-        print(newBoard.turn);
         print('Opponent moved, updating board');
-        state = state.copyWith(board: newBoard, state: PlayState.ourTurn);
-        print(state);
+        _resetGame(false);
+        state = state.copyWith(board: newBoard, state: PlayState.ourTurn,orientation: 1);
+        
+        print(state.moves);
+        print('Board updated for Black: $newBoard');
+        print('Who turn it is:');
+        print(newBoard.turn==1?"black":"White");
       });
     }
   }
@@ -159,14 +169,12 @@ class _GameState extends State<Game> {
         FirebaseFirestore.instance.collection('lobbys').doc(widget.gameId);
     //if player 2 leaves, lobby stays open
     if (lobbyData!['player2'] == user.uid) {
-
       await lobbyRef.update({
         'status': "waiting",
         'player2': "unknown",
         'username2': "Waiting for player",
       });
-    }
-    else {
+    } else {
       await lobbyRef.delete();
     }
 
@@ -223,7 +231,6 @@ class _GameState extends State<Game> {
                 moves: state.moves,
                 onMove: _onMove,
                 onPremove: _onMove,
-                draggable: false,
                 markerTheme: MarkerTheme(
                   empty: MarkerTheme.dot,
                   piece: MarkerTheme.corners(),

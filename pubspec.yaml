@@ -76,8 +76,8 @@ flutter:
   assets:
       -  assets/images/chat.png
       -  assets/images/chess2.png
-      -  assets/models/obj/male02/
       -  assets/models/obj_models/chess/
+      -  assets/models/obj_models/set/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
