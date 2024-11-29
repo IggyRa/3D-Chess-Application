@@ -25,6 +25,7 @@ class _GameState extends State<Game> {
   final user = FirebaseAuth.instance.currentUser!;
   late BoardState currentBoard;
   bool isListenerCancelled = false;
+  var convertMove = Move(from: 0, to: 0);
 
   @override
   void initState() {
@@ -93,6 +94,9 @@ class _GameState extends State<Game> {
 
   @override
   void dispose() {
+    if (!_lobbyStream.isPaused) {
+      _lobbyStream.cancel();
+    }
     super.dispose();
   }
 
@@ -104,17 +108,15 @@ class _GameState extends State<Game> {
   }
 
   void _onMove(Move move) async {
-    print("onMove tiggered");
     bool result = game.makeSquaresMove(move);
+    print("onMove tiggered\nmove details");
     print(result);
-    print("move details");
     print(move.from);
     print(move.to);
-    print(move.piece);
     if (result) {
       setState(() {
         state = game.squaresState(player);
-        print(state);
+        //print(state);
       });
       currentBoard = state.board;
       _updateGameStateInFirestore();
@@ -128,12 +130,11 @@ class _GameState extends State<Game> {
     Map<String, dynamic> boardData = {
       'board': currentBoard.board,
       'turn': currentBoard.turn,
-      // 'orientation': currentBoard.orientation,
-      // 'lastFrom': currentBoard.lastFrom,
-      // 'lastTo': currentBoard.lastTo,
-      // 'checkSquare': currentBoard.checkSquare,
+      'orientation': currentBoard.orientation,
+      'lastFrom': currentBoard.lastFrom,
+      'lastTo': currentBoard.lastTo,
+      'checkSquare': currentBoard.checkSquare,
     };
-    print('Updating Firestore with turn: ${currentBoard.turn}');
     await lobbyRef.update({
       'gameState': boardData,
     });
@@ -145,22 +146,23 @@ class _GameState extends State<Game> {
       BoardState newBoard = BoardState(
         board: List<String>.from(boardData['board']),
         turn: boardData['turn'],
-        //orientation: boardData['orientation'],
-        //lastFrom: boardData['lastFrom'],
-        //lastTo: boardData['lastTo'],
-        //checkSquare: boardData['checkSquare'],
+        orientation: boardData['orientation'],
+        lastFrom: boardData['lastFrom'],
+        lastTo: boardData['lastTo'],
+        checkSquare: boardData['checkSquare'],
       );
-      //moving = bishop.GameMove(from: );
-      setState(() {
-        print('Opponent moved, updating board');
-        _resetGame(false);
-        state = state.copyWith(board: newBoard, state: PlayState.ourTurn,orientation: 1);
-        
-        print(state.moves);
-        print('Board updated for Black: $newBoard');
-        print('Who turn it is:');
-        print(newBoard.turn==1?"black":"White");
-      });
+      convertMove = Move(from: newBoard.lastFrom!, to: newBoard.lastTo!);
+      bool result = game.makeSquaresMove(convertMove);
+      print(result);
+      print("move details");
+      if (result) {
+        setState(() {
+          state = game.squaresState(player);
+          print(state.board);
+        });
+        currentBoard = state.board;
+        _updateGameStateInFirestore();
+      }
     }
   }
 
