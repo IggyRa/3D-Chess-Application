@@ -80,7 +80,7 @@ class _GenerateScreenState extends State<GenerateScreen> {
     setState(() {});
 
     // Wait for web
-    Future.delayed(const Duration(milliseconds: 100), () async {
+    Future.delayed(const Duration(milliseconds: 10), () async {
       await three3dRender.prepareContext();
 
       initScene();
@@ -113,12 +113,16 @@ class _GenerateScreenState extends State<GenerateScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        child: const Text("render"),
+        child: const Text("Reset"),
         onPressed: () {
-          render();
+          resetCamera();
         },
       ),
     );
+  }
+
+  resetCamera() {
+    camera.position.set(0, 25, 40);
   }
 
   Widget _build(BuildContext context) {
@@ -206,7 +210,7 @@ class _GenerateScreenState extends State<GenerateScreen> {
 
   initPage() async {
     camera = three.PerspectiveCamera(45, width / height, 1, 2000);
-    camera.position.set(0, 100, 150); // Adjust camera position
+    camera.position.set(0, 25, 40); // Adjust camera position
     // scene
 
     scene = three.Scene();
@@ -222,8 +226,8 @@ class _GenerateScreenState extends State<GenerateScreen> {
 
     controls.screenSpacePanning = false;
 
-    controls.minDistance = 10;
-    controls.maxDistance = 1000;
+    controls.minDistance = 25;
+    controls.maxDistance = 100;
 
     controls.maxPolarAngle = three.Math.pi / 2;
 
@@ -265,8 +269,8 @@ class _GenerateScreenState extends State<GenerateScreen> {
         await loader.loadAsync('assets/models/obj_models/set/white_rook.obj');
     wknight =
         await loader.loadAsync('assets/models/obj_models/set/white_knight.obj');
-    wbishop =
-        //await loader.loadAsync('assets/models/obj_models/set/white_bishop.obj');
+    // wbishop =
+    //await loader.loadAsync('assets/models/obj_models/set/white_bishop.obj');
     wpawn =
         await loader.loadAsync('assets/models/obj_models/set/white_pawn.obj');
 
@@ -316,10 +320,10 @@ class _GenerateScreenState extends State<GenerateScreen> {
     bknight.position.set(-3.5, 0, -8);
     three.Object3D bknight2 = bknight.clone();
     bknight2.position.set(3.5, 0, -8);
-        bknight.rotation.y = three.Math.pi;
+    bknight.rotation.y = three.Math.pi;
     bknight2.rotation.y = three.Math.pi;
 
-    bking.position.set(-1.25, 1, -8);
+    bking.position.set(1.25, 1, -8);
     bqueen.position.set(-1.25, 1, -8);
     //adding white pieces
     scene.add(wrook);
