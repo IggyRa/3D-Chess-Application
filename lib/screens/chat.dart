@@ -86,7 +86,7 @@ class ChatScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const GenerateScreen()),
+                              builder: (context) => const GenerateScreen(board: [],whitePov: true,)),
                         );
                       },
                       label: const Text('Chess generation'),

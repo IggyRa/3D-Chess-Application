@@ -6,7 +6,10 @@ import 'package:three_dart/three_dart.dart' as three;
 import 'package:three_dart_jsm/three_dart_jsm.dart' as three_jsm;
 
 class GenerateScreen extends StatefulWidget {
-  const GenerateScreen({super.key});
+  const GenerateScreen(
+      {super.key, required this.board, required this.whitePov});
+  final List<String> board;
+  final bool whitePov;
   @override
   State<GenerateScreen> createState() => _GenerateScreenState();
 }
@@ -45,6 +48,7 @@ class _GenerateScreenState extends State<GenerateScreen> {
       bknight,
       bbishop,
       bqueen;
+  //bool whitePov = false;
 
   late three.Texture texture;
 
@@ -58,6 +62,7 @@ class _GenerateScreenState extends State<GenerateScreen> {
   @override
   void initState() {
     super.initState();
+    print("Board provided: ${widget.board}");
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -208,9 +213,11 @@ class _GenerateScreenState extends State<GenerateScreen> {
     initPage();
   }
 
-  initPage() async {
+  initPage() {
     camera = three.PerspectiveCamera(45, width / height, 1, 2000);
-    camera.position.set(0, 25, 40); // Adjust camera position
+    widget.whitePov
+        ? camera.position.set(0, 25, 40)
+        : camera.position.set(0, 25, -40);
     // scene
 
     scene = three.Scene();
@@ -238,7 +245,37 @@ class _GenerateScreenState extends State<GenerateScreen> {
     camera.add(pointLight);
     scene.add(camera);
     scene.background = three.Color(0xd3d3d3);
-    // texture
+    //customLoad();
+    loadAll();
+
+    animate();
+  }
+
+  animate() {
+    if (!mounted || disposed) {
+      return;
+    }
+
+    render();
+
+    Future.delayed(const Duration(milliseconds: 50), () {
+      animate();
+    });
+  }
+
+  @override
+  void dispose() {
+    if (!kIsWeb) {
+      print(" disposed on not web");
+      disposed = true;
+      three3dRender.dispose();
+    } else {
+      print("disposed on web");
+    }
+    super.dispose();
+  }
+
+  loadAll() async {
     var manager = three.LoadingManager();
 
     var mtlLoader = three_jsm.MTLLoader(manager);
@@ -269,10 +306,10 @@ class _GenerateScreenState extends State<GenerateScreen> {
         await loader.loadAsync('assets/models/obj_models/set/white_rook.obj');
     wknight =
         await loader.loadAsync('assets/models/obj_models/set/white_knight.obj');
-    // wbishop =
-    //await loader.loadAsync('assets/models/obj_models/set/white_bishop.obj');
-    wpawn =
-        await loader.loadAsync('assets/models/obj_models/set/white_pawn.obj');
+    wbishop =
+        //await loader.loadAsync('assets/models/obj_models/set/test_bish.obj');
+        wpawn = await loader
+            .loadAsync('assets/models/obj_models/set/white_pawn.obj');
 
     var blackMaterial = await mtlLoader.loadAsync('black_material.mtl');
     await blackMaterial.preload();
@@ -285,100 +322,211 @@ class _GenerateScreenState extends State<GenerateScreen> {
         await loader.loadAsync('assets/models/obj_models/set/black_rook.obj');
     bknight =
         await loader.loadAsync('assets/models/obj_models/set/black_knight.obj');
-    // bbishop =
-    //     await loader.loadAsync('assets/models/obj_models/set/black_bishop.obj');
-    bpawn =
-        await loader.loadAsync('assets/models/obj_models/set/black_pawn.obj');
+    bbishop =
+        //      await loader.loadAsync('assets/models/obj_models/set/test1.obj');
+        bpawn = await loader
+            .loadAsync('assets/models/obj_models/set/black_pawn.obj');
+    List<String> board = [];
+    if (widget.board.isEmpty) {
+      board = [
+        'r',
+        'n',
+        'b',
+        'q',
+        'k',
+        'b',
+        'n',
+        'r',
+        'p',
+        'p',
+        'p',
+        'p',
+        'p',
+        'p',
+        'p',
+        'p',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        'P',
+        'P',
+        'P',
+        'P',
+        'P',
+        'P',
+        'P',
+        'P',
+        'R',
+        'N',
+        'B',
+        'Q',
+        'K',
+        'B',
+        'N',
+        'R',
+      ];
+    } else {
+      board = widget.board;
+    }
 
-//set white positions
-    wrook.position.set(-8, 0, 8);
-    three.Object3D wrook2 = wrook.clone();
-    wrook2.position.set(8, 0, 8);
+    for (int i = 0; i < 64; i++) {
+      if (board[i] == '') {
+      } else {
+        double x = (2.25 * (i % 8) - 8);
+
+        double z = -8 + (i ~/ 8) * 2.25;
+
+        if (board[i] == 'r') {
+          three.Object3D newbrook = brook.clone();
+          newbrook.name = "brook$i";
+          newbrook.position.set(x, 0, z);
+          scene.add(newbrook);
+        } else if (board[i] == 'n') {
+          three.Object3D newbknight = bknight.clone();
+          newbknight.name = "bknight$i";
+          newbknight.position.set(x, 0, z);
+          newbknight.rotation.y = three.Math.pi;
+          scene.add(newbknight);
+        } else if (board[i] == 'b') {
+          three.Object3D newbbishop = bbishop.clone();
+          newbbishop.name = "bbishop$i";
+          newbbishop.position.set(x, 0, z);
+          scene.add(newbbishop);
+        } else if (board[i] == 'q') {
+          bqueen.position.set(x, 1, z);
+          scene.add(bqueen);
+        } else if (board[i] == 'k') {
+          bking.position.set(x, 1, z);
+          scene.add(bking);
+        } else if (board[i] == 'p') {
+          three.Object3D newbpawn = bpawn.clone();
+          newbpawn.name = "bpawn$i";
+          newbpawn.position.set(x, 0, z);
+          scene.add(newbpawn);
+        } else if (board[i] == 'P') {
+          three.Object3D newwpawn = wpawn.clone();
+          newwpawn.name = "wpawn$i";
+          newwpawn.position.set(x, 0, z);
+          scene.add(newwpawn);
+        } else if (board[i] == 'R') {
+          three.Object3D newwrook = wrook.clone();
+          newwrook.name = "wrook$i";
+          newwrook.position.set(x, 0, z);
+          scene.add(newwrook);
+        } else if (board[i] == 'N') {
+          three.Object3D newwknight = wknight.clone();
+          newwknight.name = "wknight$i";
+          newwknight.position.set(x, 0, z);
+          newwknight.rotation.y = three.Math.pi;
+          scene.add(newwknight);
+        } else if (board[i] == 'B') {
+          three.Object3D newwbishop = wbishop.clone();
+          newwbishop.name = "wbishop$i";
+          newwbishop.position.set(x, 0, z);
+          scene.add(newwbishop);
+        } else if (board[i] == 'Q') {
+          wqueen.position.set(x, 1, z);
+          scene.add(wqueen);
+        } else if (board[i] == 'K') {
+          wking.position.set(x, 1, z);
+          scene.add(wking);
+        }
+      }
+    }
+  }
+}
+
+
+// old version:
+   // wrook.position.set(-8, 0, 8);
+    // three.Object3D wrook2 = wrook.clone();
+    // wrook2.position.set(8, 0, 8);
 
     // wbishop.position.set(-5.75, 0, 8);
     // three.Object3D wbishop2 = wbishop.clone();
     // wbishop2.position.set(5.75, 0, 8);
 
-    wknight.position.set(-3.5, 0, 8);
-    three.Object3D wknight2 = wknight.clone();
-    wknight2.position.set(3.5, 0, 8);
-    wknight.rotation.y = three.Math.pi;
-    wknight2.rotation.y = three.Math.pi;
+    // wknight.position.set(-3.5, 0, 8);
+    // three.Object3D wknight2 = wknight.clone();
+    // wknight2.position.set(3.5, 0, 8);
+    // wknight.rotation.y = three.Math.pi;
+    // wknight2.rotation.y = three.Math.pi;
 
-    wking.position.set(1.25, 1, 8);
-    wqueen.position.set(-1.25, 1, 8);
-//set black positions
+    // wking.position.set(1.25, 1, 8);
+    // wqueen.position.set(-1.25, 1, 8);
 
-    brook.position.set(8, 0, -8);
-    three.Object3D brook2 = brook.clone();
-    brook2.position.set(-8, 0, -8);
+    //brook.position.set(8, 0, -8);
+    // three.Object3D brook2 = brook.clone();
+    // brook2.position.set(-8, 0, -8);
 
-    // bbishop.position.set(-5.75, 0, 8);
+    // bbishop.position.set(-5.75, 0, -8);
     // three.Object3D bbishop2 = bbishop.clone();
-    // bbishop2.position.set(5.75, 0, 8);
+    // bbishop2.position.set(5.75, 0, -8);
 
-    bknight.position.set(-3.5, 0, -8);
-    three.Object3D bknight2 = bknight.clone();
-    bknight2.position.set(3.5, 0, -8);
-    bknight.rotation.y = three.Math.pi;
-    bknight2.rotation.y = three.Math.pi;
+    // bknight.position.set(-3.5, 0, -8);
+    // three.Object3D bknight2 = bknight.clone();
+    // bknight2.position.set(3.5, 0, -8);
+    // bknight.rotation.y = three.Math.pi;
+    // bknight2.rotation.y = three.Math.pi;
 
-    bking.position.set(1.25, 1, -8);
-    bqueen.position.set(-1.25, 1, -8);
-    //adding white pieces
-    scene.add(wrook);
-    scene.add(wrook2);
-    scene.add(wknight);
-    scene.add(wknight2);
-    scene.add(wking);
-    scene.add(wqueen);
+    //bking.position.set(1.25, 1, -8);
+    //bqueen.position.set(-1.25, 1, -8);
 
-    //adding white pieces
-    scene.add(brook);
-    scene.add(brook2);
-    scene.add(bknight);
-    scene.add(bknight2);
-    scene.add(bking);
-    scene.add(bqueen);
-    for (double i = 0; i < 8; i++) {
-      three.Object3D newwpawn = wpawn.clone();
-      newwpawn.name = "wpawn$i";
-      //initial offset is 8, each separated by 2.25
-      newwpawn.position.set(-2.25 * i + 8, 0, 5.5);
-      scene.add(newwpawn);
-    }
-    //adding black pieces
-    scene.add(brook);
+    //scene.add(wrook);
+    // scene.add(wrook2);
+    // scene.add(wknight);
+    // scene.add(wknight2);
+    // // scene.add(wbishop);
+    // // scene.add(wbishop2);
 
-    for (double i = 0; i < 8; i++) {
-      three.Object3D newbpawn = bpawn.clone();
-      newbpawn.name = "bpawn$i";
-      //initial offset is 8, each separated by 2.25
-      newbpawn.position.set(-2.25 * i + 8, 0, -5.5);
-      scene.add(newbpawn);
-    }
+    //scene.add(brook);
+    // scene.add(brook2);
+    //scene.add(bknight);
+    // scene.add(bknight2);
+    // // scene.add(bbishop);
+    // // scene.add(bbishop2);
 
-    animate();
-  }
+    // for (double i = 0; i < 8; i++) {
+    //   three.Object3D newwpawn = wpawn.clone();
+    //   newwpawn.name = "wpawn$i";
+    //   //initial offset is 8, each separated by 2.25
+    //   newwpawn.position.set(-2.25 * i + 8, 0, 5.5);
+    //   scene.add(newwpawn);
+    // }
 
-  animate() {
-    if (!mounted || disposed) {
-      return;
-    }
-
-    render();
-
-    Future.delayed(const Duration(milliseconds: 50), () {
-      animate();
-    });
-  }
-
-  @override
-  void dispose() {
-    print(" dispose ............. ");
-    disposed = true;
-    three3dRender.dispose();
-
-    super.dispose();
-  }
-}
+    // for (double i = 0; i < 8; i++) {
+    //three.Object3D newbpawn = bpawn.clone();
+    //newbpawn.name = "bpawn$i";
+    //initial offset is 8, each separated by 2.25
+    //newbpawn.position.set(-2.25 * i + 8, 0, -5.5);
+    //scene.add(newbpawn);
+    // }

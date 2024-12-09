@@ -9,8 +9,8 @@ import 'package:square_bishop/square_bishop.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class Game extends StatefulWidget {
-  const Game({super.key, required this.gameId});
-  final String gameId;
+  const Game({super.key, this.gameId});
+  final String? gameId;
   @override
   State<Game> createState() => _GameState();
 }
@@ -47,7 +47,6 @@ class _GameState extends State<Game> {
             if (lobbyData!['player1_color'] == 'white') {
               print('player 1 got white color');
               player = Squares.white;
-
               _resetGame(false);
             } else {
               player = Squares.black;
@@ -84,10 +83,10 @@ class _GameState extends State<Game> {
         FirebaseFirestore.instance.collection('lobbys').doc(widget.gameId);
     gameRef.snapshots().listen((snapshot) {
       if (snapshot.exists) {
-        setState(() {
-          lobbyData = snapshot.data();
-          _getGameFromFirestore();
-        });
+        //setState(() {
+        lobbyData = snapshot.data();
+        _getGameFromFirestore();
+        //});
       }
     });
   }
@@ -103,6 +102,7 @@ class _GameState extends State<Game> {
   void _resetGame([bool ss = true]) {
     game = bishop.Game(variant: bishop.Variant.standard());
     state = game.squaresState(player);
+    currentBoard = state.board;
     print("Board got reseted");
     if (ss) setState(() {});
   }
@@ -116,7 +116,7 @@ class _GameState extends State<Game> {
     if (result) {
       setState(() {
         state = game.squaresState(player);
-        //print(state);
+        print(state.board);
       });
       currentBoard = state.board;
       _updateGameStateInFirestore();
@@ -158,7 +158,7 @@ class _GameState extends State<Game> {
       if (result) {
         setState(() {
           state = game.squaresState(player);
-          print(state.board);
+          //print(state.board);
         });
         currentBoard = state.board;
         _updateGameStateInFirestore();
@@ -255,7 +255,10 @@ class _GameState extends State<Game> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const GenerateScreen()),
+                      builder: (context) => GenerateScreen(
+                            board: currentBoard.board,
+                            whitePov: player == Squares.white,
+                          )),
                 );
               },
               label: const Text('Generate board'),
