@@ -236,7 +236,7 @@ class _GenerateScreenState extends State<GenerateScreen> {
     controls.minDistance = 25;
     controls.maxDistance = 100;
 
-    controls.maxPolarAngle = three.Math.pi / 2;
+    controls.maxPolarAngle = three.Math.PI / 2;
 
     var ambientLight = three.AmbientLight(0xcccccc, 0.4);
     scene.add(ambientLight);
@@ -290,7 +290,7 @@ class _GenerateScreenState extends State<GenerateScreen> {
     object = await loader.loadAsync('assets/models/obj_models/chess/chess.obj');
     object.scale.set(0.5, 0.5, 0.5);
     object.position.set(0, -2);
-    object.rotation.x = -three.Math.pi / 2;
+    object.rotation.x = -three.Math.PI / 2;
     scene.add(object);
 
     mtlLoader.setPath('assets/models/obj_models/set/');
@@ -307,9 +307,9 @@ class _GenerateScreenState extends State<GenerateScreen> {
     wknight =
         await loader.loadAsync('assets/models/obj_models/set/white_knight.obj');
     wbishop =
-        //await loader.loadAsync('assets/models/obj_models/set/test_bish.obj');
-        wpawn = await loader
-            .loadAsync('assets/models/obj_models/set/white_pawn.obj');
+        await loader.loadAsync('assets/models/obj_models/set/white_bishop.obj');
+    wpawn =
+        await loader.loadAsync('assets/models/obj_models/set/white_pawn.obj');
 
     var blackMaterial = await mtlLoader.loadAsync('black_material.mtl');
     await blackMaterial.preload();
@@ -323,9 +323,9 @@ class _GenerateScreenState extends State<GenerateScreen> {
     bknight =
         await loader.loadAsync('assets/models/obj_models/set/black_knight.obj');
     bbishop =
-        //      await loader.loadAsync('assets/models/obj_models/set/test1.obj');
-        bpawn = await loader
-            .loadAsync('assets/models/obj_models/set/black_pawn.obj');
+        await loader.loadAsync('assets/models/obj_models/set/black_bishop.obj');
+    bpawn =
+        await loader.loadAsync('assets/models/obj_models/set/black_pawn.obj');
     List<String> board = [];
     if (widget.board.isEmpty) {
       board = [
@@ -414,11 +414,12 @@ class _GenerateScreenState extends State<GenerateScreen> {
           three.Object3D newbknight = bknight.clone();
           newbknight.name = "bknight$i";
           newbknight.position.set(x, 0, z);
-          newbknight.rotation.y = three.Math.pi;
+          newbknight.rotation.y = three.Math.PI;
           scene.add(newbknight);
         } else if (board[i] == 'b') {
           three.Object3D newbbishop = bbishop.clone();
           newbbishop.name = "bbishop$i";
+          newbbishop.scale.set(1.1, 1.1, 1.1);
           newbbishop.position.set(x, 0, z);
           scene.add(newbbishop);
         } else if (board[i] == 'q') {
@@ -446,12 +447,13 @@ class _GenerateScreenState extends State<GenerateScreen> {
           three.Object3D newwknight = wknight.clone();
           newwknight.name = "wknight$i";
           newwknight.position.set(x, 0, z);
-          newwknight.rotation.y = three.Math.pi;
+          newwknight.rotation.y = three.Math.PI;
           scene.add(newwknight);
         } else if (board[i] == 'B') {
           three.Object3D newwbishop = wbishop.clone();
           newwbishop.name = "wbishop$i";
           newwbishop.position.set(x, 0, z);
+          newwbishop.scale.set(1.1, 1.1, 1.1);
           scene.add(newwbishop);
         } else if (board[i] == 'Q') {
           wqueen.position.set(x, 1, z);
