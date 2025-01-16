@@ -117,12 +117,6 @@ class _GenerateScreenState extends State<GenerateScreen> {
           return SingleChildScrollView(child: _build(context));
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Text("Reset"),
-        onPressed: () {
-          resetCamera();
-        },
-      ),
     );
   }
 
@@ -216,8 +210,8 @@ class _GenerateScreenState extends State<GenerateScreen> {
   initPage() {
     camera = three.PerspectiveCamera(45, width / height, 1, 2000);
     widget.whitePov
-        ? camera.position.set(0, 25, 40)
-        : camera.position.set(0, 25, -40);
+        ? camera.position.set(0, 25, 60)
+        : camera.position.set(0, 25, -60);
     // scene
 
     scene = three.Scene();
@@ -245,7 +239,6 @@ class _GenerateScreenState extends State<GenerateScreen> {
     camera.add(pointLight);
     scene.add(camera);
     scene.background = three.Color(0xd3d3d3);
-    //customLoad();
     loadAll();
 
     animate();
@@ -282,16 +275,27 @@ class _GenerateScreenState extends State<GenerateScreen> {
 
     var loader = three_jsm.OBJLoader(null);
 
+    //Wooden board
     mtlLoader.setPath('assets/models/obj_models/chess/');
     var materials = await mtlLoader.loadAsync('chess.mtl');
     await materials.preload();
-
     loader.setMaterials(materials);
     object = await loader.loadAsync('assets/models/obj_models/chess/chess.obj');
     object.scale.set(0.5, 0.5, 0.5);
     object.position.set(0, -2);
     object.rotation.x = -three.Math.PI / 2;
     scene.add(object);
+
+    //Stone board
+    // mtlLoader.setPath('assets/models/obj_models/chess2/');
+    // var materials = await mtlLoader.loadAsync('chess.mtl');
+    // await materials.preload();
+    // loader.setMaterials(materials);
+    // object = await loader.loadAsync('assets/models/obj_models/chess2/chess.obj');
+    // object.scale.set(0.42, 0.42, 0.42);
+    // object.position.set(0, -1.2);
+    // object.rotation.x = -three.Math.PI / 2;
+    // scene.add(object);
 
     mtlLoader.setPath('assets/models/obj_models/set/');
     var whiteMaterial = await mtlLoader.loadAsync('white_material.mtl');
@@ -413,20 +417,19 @@ class _GenerateScreenState extends State<GenerateScreen> {
         } else if (board[i] == 'n') {
           three.Object3D newbknight = bknight.clone();
           newbknight.name = "bknight$i";
-          newbknight.position.set(x, 0, z);
+          newbknight.position.set(x, 0.25, z);
           newbknight.rotation.y = three.Math.PI;
           scene.add(newbknight);
         } else if (board[i] == 'b') {
           three.Object3D newbbishop = bbishop.clone();
           newbbishop.name = "bbishop$i";
-          newbbishop.scale.set(1.1, 1.1, 1.1);
-          newbbishop.position.set(x, 0, z);
+          newbbishop.position.set(x, 0.5, z);
           scene.add(newbbishop);
         } else if (board[i] == 'q') {
-          bqueen.position.set(x, 1, z);
+          bqueen.position.set(x, 0.75, z);
           scene.add(bqueen);
         } else if (board[i] == 'k') {
-          bking.position.set(x, 1, z);
+          bking.position.set(x, 0.9, z);
           scene.add(bking);
         } else if (board[i] == 'p') {
           three.Object3D newbpawn = bpawn.clone();
@@ -446,89 +449,22 @@ class _GenerateScreenState extends State<GenerateScreen> {
         } else if (board[i] == 'N') {
           three.Object3D newwknight = wknight.clone();
           newwknight.name = "wknight$i";
-          newwknight.position.set(x, 0, z);
+          newwknight.position.set(x, 0.25, z);
           newwknight.rotation.y = three.Math.PI;
           scene.add(newwknight);
         } else if (board[i] == 'B') {
           three.Object3D newwbishop = wbishop.clone();
           newwbishop.name = "wbishop$i";
-          newwbishop.position.set(x, 0, z);
-          newwbishop.scale.set(1.1, 1.1, 1.1);
+          newwbishop.position.set(x, 0.5, z);
           scene.add(newwbishop);
         } else if (board[i] == 'Q') {
-          wqueen.position.set(x, 1, z);
+          wqueen.position.set(x, 0.75, z);
           scene.add(wqueen);
         } else if (board[i] == 'K') {
-          wking.position.set(x, 1, z);
+          wking.position.set(x, 0.9, z);
           scene.add(wking);
         }
       }
     }
   }
 }
-
-
-// old version:
-   // wrook.position.set(-8, 0, 8);
-    // three.Object3D wrook2 = wrook.clone();
-    // wrook2.position.set(8, 0, 8);
-
-    // wbishop.position.set(-5.75, 0, 8);
-    // three.Object3D wbishop2 = wbishop.clone();
-    // wbishop2.position.set(5.75, 0, 8);
-
-    // wknight.position.set(-3.5, 0, 8);
-    // three.Object3D wknight2 = wknight.clone();
-    // wknight2.position.set(3.5, 0, 8);
-    // wknight.rotation.y = three.Math.pi;
-    // wknight2.rotation.y = three.Math.pi;
-
-    // wking.position.set(1.25, 1, 8);
-    // wqueen.position.set(-1.25, 1, 8);
-
-    //brook.position.set(8, 0, -8);
-    // three.Object3D brook2 = brook.clone();
-    // brook2.position.set(-8, 0, -8);
-
-    // bbishop.position.set(-5.75, 0, -8);
-    // three.Object3D bbishop2 = bbishop.clone();
-    // bbishop2.position.set(5.75, 0, -8);
-
-    // bknight.position.set(-3.5, 0, -8);
-    // three.Object3D bknight2 = bknight.clone();
-    // bknight2.position.set(3.5, 0, -8);
-    // bknight.rotation.y = three.Math.pi;
-    // bknight2.rotation.y = three.Math.pi;
-
-    //bking.position.set(1.25, 1, -8);
-    //bqueen.position.set(-1.25, 1, -8);
-
-    //scene.add(wrook);
-    // scene.add(wrook2);
-    // scene.add(wknight);
-    // scene.add(wknight2);
-    // // scene.add(wbishop);
-    // // scene.add(wbishop2);
-
-    //scene.add(brook);
-    // scene.add(brook2);
-    //scene.add(bknight);
-    // scene.add(bknight2);
-    // // scene.add(bbishop);
-    // // scene.add(bbishop2);
-
-    // for (double i = 0; i < 8; i++) {
-    //   three.Object3D newwpawn = wpawn.clone();
-    //   newwpawn.name = "wpawn$i";
-    //   //initial offset is 8, each separated by 2.25
-    //   newwpawn.position.set(-2.25 * i + 8, 0, 5.5);
-    //   scene.add(newwpawn);
-    // }
-
-    // for (double i = 0; i < 8; i++) {
-    //three.Object3D newbpawn = bpawn.clone();
-    //newbpawn.name = "bpawn$i";
-    //initial offset is 8, each separated by 2.25
-    //newbpawn.position.set(-2.25 * i + 8, 0, -5.5);
-    //scene.add(newbpawn);
-    // }

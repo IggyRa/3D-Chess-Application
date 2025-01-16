@@ -81,6 +81,7 @@ flutter:
       -  assets/images/chat.png
       -  assets/images/chess2.png
       -  assets/models/obj_models/chess/
+      -  assets/models/obj_models/chess2/
       -  assets/models/obj_models/set/
 
   # An image asset can refer to one or more resolution-specific "variants", see
