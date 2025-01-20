@@ -48,7 +48,6 @@ class _GenerateScreenState extends State<GenerateScreen> {
       bknight,
       bbishop,
       bqueen;
-  //bool whitePov = false;
 
   late three.Texture texture;
 
@@ -62,7 +61,6 @@ class _GenerateScreenState extends State<GenerateScreen> {
   @override
   void initState() {
     super.initState();
-    print("Board provided: ${widget.board}");
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -120,10 +118,6 @@ class _GenerateScreenState extends State<GenerateScreen> {
     );
   }
 
-  resetCamera() {
-    camera.position.set(0, 25, 40);
-  }
-
   Widget _build(BuildContext context) {
     return Column(
       children: [
@@ -156,23 +150,18 @@ class _GenerateScreenState extends State<GenerateScreen> {
   }
 
   render() {
-    //int t = DateTime.now().millisecondsSinceEpoch;
-
     final gl = three3dRender.gl;
 
     renderer!.render(scene, camera);
 
-    //int t1 = DateTime.now().millisecondsSinceEpoch;
-
-    // if (verbose) {
-    //   print("render cost: ${t1 - t} ");
-    //   print(renderer!.info.memory);
-    //   print(renderer!.info.render);
-    // }
+    if (verbose) {
+      print(renderer!.info.memory);
+      print(renderer!.info.render);
+    }
 
     gl.flush();
 
-    //if (verbose) print(" render: sourceTexture: $sourceTexture ");
+    if (verbose) print(" render: sourceTexture: $sourceTexture ");
 
     if (!kIsWeb) {
       three3dRender.updateTexture(sourceTexture);
@@ -213,13 +202,9 @@ class _GenerateScreenState extends State<GenerateScreen> {
         ? camera.position.set(0, 25, 60)
         : camera.position.set(0, 25, -60);
     // scene
-
     scene = three.Scene();
 
     controls = three_jsm.OrbitControls(camera, _globalKey);
-    // controls.listenToKeyEvents( window );
-
-    //controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
 
     controls.enableDamping =
         true; // an animation loop is required when either damping or auto-rotation are enabled
@@ -261,9 +246,11 @@ class _GenerateScreenState extends State<GenerateScreen> {
     if (!kIsWeb) {
       print(" disposed on not web");
       disposed = true;
-      three3dRender.dispose();
+      //renderer!.dispose();
+      scene.dispose();
     } else {
       print("disposed on web");
+      scene.dispose();
     }
     super.dispose();
   }
@@ -333,71 +320,14 @@ class _GenerateScreenState extends State<GenerateScreen> {
     List<String> board = [];
     if (widget.board.isEmpty) {
       board = [
-        'r',
-        'n',
-        'b',
-        'q',
-        'k',
-        'b',
-        'n',
-        'r',
-        'p',
-        'p',
-        'p',
-        'p',
-        'p',
-        'p',
-        'p',
-        'p',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        'P',
-        'P',
-        'P',
-        'P',
-        'P',
-        'P',
-        'P',
-        'P',
-        'R',
-        'N',
-        'B',
-        'Q',
-        'K',
-        'B',
-        'N',
-        'R',
-      ];
+    'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
+    'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
+    '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', '',
+    'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
+    'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R',];
     } else {
       board = widget.board;
     }
