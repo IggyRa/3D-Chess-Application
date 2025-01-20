@@ -88,7 +88,8 @@ group('Authentication and validation tests', () {});
         ];
 
         for (var email in validEmails) {
-          expect(validateEmail(email), isTrue, reason: 'Email $email should be valid');
+          expect(validateEmail(email), isTrue, 
+          reason: 'Email $email should be valid');
         }
       });
 
@@ -99,7 +100,8 @@ group('Authentication and validation tests', () {});
         ];
 
         for (var email in invalidEmails) {
-          expect(validateEmail(email), isFalse, reason: 'Email $email should be invalid');
+          expect(validateEmail(email), isFalse, 
+          reason: 'Email $email should be invalid');
         }
       });
     });
@@ -152,7 +154,7 @@ group('Authentication and validation tests', () {});
       test('Invalid usernames - less than 4 characters', () {
         final invalidUsernames = [
           '',
-          'ac'
+          'ac',
           'abc'
         ];
 
