@@ -22,6 +22,7 @@ class ChatScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
       appBar: AppBar(
+        leading: null,
         title: FutureBuilder<Map<String, dynamic>?>(
           future: _getUserData(),
           builder: (context, snapshot) {

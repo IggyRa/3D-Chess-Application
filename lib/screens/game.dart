@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:chatt_app/screens/chat.dart';
 import 'package:chatt_app/screens/generation.dart';
-import 'package:chatt_app/screens/lobby_list.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:bishop/bishop.dart' as bishop;
@@ -46,12 +46,10 @@ class _GameState extends State<Game> {
           //for player 1
           if (lobbyData!['player1'] == user.uid) {
             if (lobbyData!['player1_color'] == 'white') {
-              print('player 1 got white color');
               player = Squares.white;
               _resetGame(false);
             } else {
               player = Squares.black;
-              print('player 1 got black color');
               _resetGame(false);
             }
           }
@@ -59,20 +57,18 @@ class _GameState extends State<Game> {
           if (lobbyData!['player2'] == user.uid) {
             if (lobbyData!['player1_color'] == 'white') {
               player = Squares.black;
-              print('player 2 got black color');
               _resetGame(false);
             } else {
               player = Squares.white;
-              print('player 2 got white color');
               _resetGame(false);
             }
           }
-          if (lobbyData!['username2'] != "Waiting for player") {
+          if (lobbyData!['status'] != "waiting") {
             print("subscription got cancelled");
             _lobbyStream.cancel();
             _initializeGameUpdates();
           }
-          ;
+          
         });
       }
     });
@@ -121,7 +117,6 @@ class _GameState extends State<Game> {
       if (state.state == PlayState.finished) {
         _showWinnerDialog();
       }
-
       _updateGameStateInFirestore();
     }
   }
@@ -135,16 +130,17 @@ class _GameState extends State<Game> {
           content: const Text('Congratulations!'),
           actions: <Widget>[
             TextButton(
-              child: const Text('Return to lobby list'),
+              child: const Text('Return to Main Menu'),
               onPressed: () {
                 Navigator.of(context).pop();
-                Navigator.push(
+                _deleteGame();
+                Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const LobbyList(),
+                    builder: (context) => const ChatScreen(),
                   ),
+                  (Route<dynamic> route) => false,
                 );
-                _deleteGame();
               },
             )
           ],
@@ -162,10 +158,16 @@ class _GameState extends State<Game> {
           content: const Text('Better luck next time!'),
           actions: <Widget>[
             TextButton(
-              child: const Text('Return to lobby list'),
+              child: const Text('Return to Main Menu'),
               onPressed: () {
                 Navigator.of(context).pop();
-                _exitGame();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChatScreen(),
+                  ),
+                  (Route<dynamic> route) => false,
+                );
               },
             ),
           ],
