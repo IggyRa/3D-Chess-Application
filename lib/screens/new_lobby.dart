@@ -112,9 +112,8 @@ class _NewLobbyState extends State<NewLobby> {
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 48, 16, 0),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.4,
+        padding: const EdgeInsets.fromLTRB(16, 48, 16, 8),
+        child: SingleChildScrollView(
           child: Card(
             child: Padding(
               padding: const EdgeInsets.all(20.0),

@@ -78,15 +78,13 @@ class _GameState extends State<Game> {
   }
 
   Future<void> _initializeGameUpdates() async {
-    print("we now listening to game updates");
+    print("listening to game updates");
     final gameRef =
         FirebaseFirestore.instance.collection('lobbys').doc(widget.gameId);
     gameRef.snapshots().listen((snapshot) {
       if (snapshot.exists) {
-        //setState(() {
         lobbyData = snapshot.data();
         _getGameFromFirestore();
-        //});
       }
     });
   }
@@ -210,61 +208,63 @@ class _GameState extends State<Game> {
           },
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.person),
-                title: Text(lobbyData!['player2'] == user.uid
-                    ? lobbyData!['username1']
-                    : lobbyData!['username2']),
-                trailing: Text(lobbyData!['time']),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: BoardController(
-                state: flipBoard ? state.board.flipped() : state.board,
-                playState: state.state,
-                pieceSet: PieceSet.merida(),
-                theme: BoardTheme.blueGrey,
-                moves: state.moves,
-                onMove: _onMove,
-                onPremove: _onMove,
-                markerTheme: MarkerTheme(
-                  empty: MarkerTheme.dot,
-                  piece: MarkerTheme.corners(),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.person),
+                  title: Text(lobbyData!['player2'] == user.uid
+                      ? lobbyData!['username1']
+                      : lobbyData!['username2']),
+                  trailing: Text(lobbyData!['time']),
                 ),
-                promotionBehaviour: PromotionBehaviour.autoPremove,
               ),
-            ),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.person),
-                title: Text(lobbyData!['player2'] == user.uid
-                    ? lobbyData!['username2']
-                    : lobbyData!['username1']),
-                trailing: Text(lobbyData!['time']),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: BoardController(
+                  state: flipBoard ? state.board.flipped() : state.board,
+                  playState: state.state,
+                  pieceSet: PieceSet.merida(),
+                  theme: BoardTheme.blueGrey,
+                  moves: state.moves,
+                  onMove: _onMove,
+                  onPremove: _onMove,
+                  markerTheme: MarkerTheme(
+                    empty: MarkerTheme.dot,
+                    piece: MarkerTheme.corners(),
+                  ),
+                  promotionBehaviour: PromotionBehaviour.autoPremove,
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => GenerateScreen(
-                            board: currentBoard.board,
-                            whitePov: player == Squares.white,
-                          )),
-                );
-              },
-              label: const Text('Generate board'),
-              icon: const Icon(Icons.threed_rotation_outlined),
-            ),
-          ],
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.person),
+                  title: Text(lobbyData!['player2'] == user.uid
+                      ? lobbyData!['username2']
+                      : lobbyData!['username1']),
+                  trailing: Text(lobbyData!['time']),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => GenerateScreen(
+                              board: currentBoard.board,
+                              whitePov: player == Squares.white,
+                            )),
+                  );
+                },
+                label: const Text('Generate board'),
+                icon: const Icon(Icons.threed_rotation_outlined),
+              ),
+            ],
+          ),
         ),
       ),
     );

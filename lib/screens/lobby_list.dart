@@ -6,9 +6,10 @@ import 'package:flutter/material.dart';
 class LobbyList extends StatelessWidget {
   const LobbyList({super.key});
 
-   Future<void> _joinLobby(BuildContext context, String lobbyId) async {
+  Future<void> _joinLobby(BuildContext context, String lobbyId) async {
     final user = FirebaseAuth.instance.currentUser!;
-    final lobbyDoc = FirebaseFirestore.instance.collection('lobbys').doc(lobbyId);
+    final lobbyDoc =
+        FirebaseFirestore.instance.collection('lobbys').doc(lobbyId);
     final userData = await FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
@@ -17,16 +18,14 @@ class LobbyList extends StatelessWidget {
     await lobbyDoc.update({
       'player2': user.uid,
       'username2': userData.data()!['username'],
-      //change that when done debug
-      //'status': 'in-progress'
-      'status': 'waiting',
+      'status': 'in-progress'
     });
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => Game(
-        gameId: lobbyId,
+          gameId: lobbyId,
         ),
       ),
     );
@@ -54,7 +53,14 @@ class LobbyList extends StatelessWidget {
           final lobbies = snapshot.data?.docs ?? [];
 
           if (lobbies.isEmpty) {
-            return const Center(child: Text('No lobbies available.'));
+            return const Center(
+                child: Text(
+              'No lobbies available.',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700),
+            ));
           }
 
           return ListView.builder(
@@ -72,18 +78,19 @@ class LobbyList extends StatelessWidget {
                 child: ListTile(
                   leading: Image.asset('assets/images/chess2.png'),
                   trailing: lobbyStatus != 'in-progress'
-                        ? Icon(
-                    Icons.play_arrow,
-                    size: 40,
-                    color: Theme.of(context).colorScheme.primary,
-                  ) :const Text('Playing'),
+                      ? Icon(
+                          Icons.play_arrow,
+                          size: 40,
+                          color: Theme.of(context).colorScheme.primary,
+                        )
+                      : const Text('Playing'),
                   title: Text(lobbyName),
                   onTap: lobbyStatus == 'in-progress'
                       ? null
                       : () {
                           _joinLobby(context, lobbyId);
                         },
-                  hoverColor:Colors.green,
+                  hoverColor: Colors.green,
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
