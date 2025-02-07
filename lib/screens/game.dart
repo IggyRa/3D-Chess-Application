@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:chatt_app/screens/generation.dart';
+import 'package:chatt_app/screens/lobby_list.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:bishop/bishop.dart' as bishop;
@@ -117,8 +118,60 @@ class _GameState extends State<Game> {
         print(state.board);
       });
       currentBoard = state.board;
+      if (state.state == PlayState.finished) {
+        _showWinnerDialog();
+      }
+
       _updateGameStateInFirestore();
     }
+  }
+
+  void _showWinnerDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('You won!'),
+          content: const Text('Congratulations!'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Return to lobby list'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LobbyList(),
+                  ),
+                );
+                _deleteGame();
+              },
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  void _showLoserDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('You lost :('),
+          content: const Text('Better luck next time!'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Return to lobby list'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _exitGame();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   _updateGameStateInFirestore() async {
@@ -158,10 +211,19 @@ class _GameState extends State<Game> {
           state = game.squaresState(player);
           //print(state.board);
         });
+        if (state.state == PlayState.finished) {
+          _showLoserDialog();
+        }
         currentBoard = state.board;
         _updateGameStateInFirestore();
       }
     }
+  }
+
+  Future<void> _deleteGame() async {
+    final lobbyRef =
+        FirebaseFirestore.instance.collection('lobbys').doc(widget.gameId);
+    await lobbyRef.delete();
   }
 
   Future<void> _exitGame() async {
